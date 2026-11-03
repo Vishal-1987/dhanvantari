@@ -49,7 +49,7 @@
     ];
 
     function render() {
-      const today = orders.filter((o) => o.status === 'delivered' && new Date(o.updatedAt.replace(' ', 'T') + 'Z').toDateString() === new Date().toDateString());
+      const today = orders.filter((o) => o.status === 'delivered' && DV.toDate(o.updatedAt).toDateString() === new Date().toDateString());
       app.innerHTML = `
         <div class="page-head"><div><h1>${esc(clinic?.name || 'Clinic')}</h1><p>${icons.pin} ${esc(clinic?.address || '')}</p></div>
           <div class="row"><span class="badge">${today.length} delivered today</span><span class="badge saffron">${money(today.reduce((s, o) => s + o.total, 0))} today</span></div></div>

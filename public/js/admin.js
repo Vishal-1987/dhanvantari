@@ -79,7 +79,7 @@
 
   function attention() {
     const now = Date.now();
-    const age = (o) => (now - new Date(o.updatedAt.replace(' ', 'T') + 'Z').getTime()) / 60000;
+    const age = (o) => (now - DV.toDate(o.updatedAt).getTime()) / 60000;
     const items = [
       ...state.orders.filter((o) => o.status === 'placed' && age(o) > 5).map((o) => [o, `Not accepted by clinic for ${Math.round(age(o))} min`]),
       ...state.orders.filter((o) => ['ready', 'accepted'].includes(o.status) && !o.rider).map((o) => [o, 'No delivery partner assigned']),

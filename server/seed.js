@@ -42,38 +42,40 @@ const MEDICINES = [
 
 const hash = (p) => bcrypt.hashSync(p, 10);
 
-export function seed() {
-  if (one('SELECT COUNT(*) AS n FROM users').n > 0) return false;
+export async function seed() {
+  if ((await one('SELECT COUNT(*) AS n FROM users')).n > 0) return false;
 
-  tx(() => {
-    const clinicIds = CLINICS.map((c) =>
-      run('INSERT INTO clinics (name, kind, address, phone, lat, lng, vaidya) VALUES (?,?,?,?,?,?,?)',
-        c.name, c.kind, c.address, c.phone, c.lat, c.lng, c.vaidya).lastInsertRowid);
+  await tx(async () => {
+    const clinicIds = [];
+    for (const c of CLINICS) {
+      clinicIds.push((await run('INSERT INTO clinics (name, kind, address, phone, lat, lng, vaidya) VALUES (?,?,?,?,?,?,?)',
+        c.name, c.kind, c.address, c.phone, c.lat, c.lng, c.vaidya)).lastInsertRowid);
+    }
 
     for (const m of MEDICINES) {
-      run(`INSERT INTO medicines (name, category, form, pack, price, mrp, rx, description, ingredients, dosage, stock)
+      await run(`INSERT INTO medicines (name, category, form, pack, price, mrp, rx, description, ingredients, dosage, stock)
            VALUES (?,?,?,?,?,?,?,?,?,?,?)`, ...m, 50 + Math.floor(Math.random() * 150));
     }
 
     const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
-    run('INSERT INTO users (username, password_hash, role, name, phone) VALUES (?,?,?,?,?)',
+    await run('INSERT INTO users (username, password_hash, role, name, phone) VALUES (?,?,?,?,?)',
       process.env.ADMIN_USERNAME || 'admin', hash(adminPass), 'admin', 'Platform Administrator', '+91 90000 00000');
 
-    clinicIds.forEach((id, i) => {
-      run('INSERT INTO users (username, password_hash, role, name, phone, clinic_id) VALUES (?,?,?,?,?,?)',
+    for (const [i, id] of clinicIds.entries()) {
+      await run('INSERT INTO users (username, password_hash, role, name, phone, clinic_id) VALUES (?,?,?,?,?,?)',
         `clinic${i + 1}`, hash('clinic123'), 'clinic', `${CLINICS[i].name.split(' — ')[1]} Desk`, CLINICS[i].phone, id);
-    });
+    }
 
     const riders = [
       ['rider1', 'Ravi Kumar', '+91 98450 11111', 'Bike · KA 01 AB 1234', 12.9352, 77.6245],
       ['rider2', 'Imran Shaikh', '+91 98450 22222', 'Scooter · KA 05 CD 5678', 12.9716, 77.5946],
     ];
     for (const [u, name, phone, vehicle, lat, lng] of riders) {
-      run('INSERT INTO users (username, password_hash, role, name, phone, vehicle, lat, lng) VALUES (?,?,?,?,?,?,?,?)',
+      await run('INSERT INTO users (username, password_hash, role, name, phone, vehicle, lat, lng) VALUES (?,?,?,?,?,?,?,?)',
         u, hash('rider123'), 'rider', name, phone, vehicle, lat, lng);
     }
 
-    run('INSERT INTO users (username, password_hash, role, name, phone, address, lat, lng) VALUES (?,?,?,?,?,?,?,?)',
+    await run('INSERT INTO users (username, password_hash, role, name, phone, address, lat, lng) VALUES (?,?,?,?,?,?,?,?)',
       'demo', hash('demo123'), 'customer', 'Ananya Rao', '+91 99000 12345',
       '22, 9th Cross, BTM Layout 2nd Stage, Bengaluru 560076', 12.9166, 77.6101);
   });

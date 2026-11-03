@@ -132,7 +132,7 @@
   function renderSide() {
     const job = activeJobs()[0];
     const done = state.mine.filter((o) => o.status === 'delivered');
-    const today = done.filter((o) => new Date(o.updatedAt.replace(' ', 'T') + 'Z').toDateString() === new Date().toDateString());
+    const today = done.filter((o) => DV.toDate(o.updatedAt).toDateString() === new Date().toDateString());
     side.innerHTML = `
       <div class="card duty">
         <div class="avatar" style="width:44px;height:44px;background:${me.online ? 'var(--sage-soft)' : '#eee'}">${icons.bike}</div>

@@ -317,7 +317,7 @@
 
   window.DV = {
     icons, LOGO, store, api, logout, requireRole, HOME, DEFAULT_CENTER,
-    esc, money, time, dateTime, ago, initials, statusBadge, payBadge, stepper, STATUS,
+    esc, money, toDate, time, dateTime, ago, initials, statusBadge, payBadge, stepper, STATUS,
     toast, fail, modal, busy, topbar, connect, chime,
     makeMap, pinIcon, riderIcon, route, haversine, glide, locate, reverseGeocode,
   };

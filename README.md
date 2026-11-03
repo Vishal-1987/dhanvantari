@@ -21,7 +21,11 @@ An Ayurveda-only ordering and delivery platform with four connected apps:
 
 ## Run it
 
-Requires **Node.js 22.13+**. It uses the built-in SQLite, so there is no database to install.
+Requires **Node.js 22.13+** and a **[Neon](https://neon.tech) Postgres** database (the free tier is enough).
+
+1. Create a Neon project and copy its connection string (Dashboard → **Connect**).
+2. Copy `.env.example` to `.env` and paste the connection string into `DATABASE_URL`. `.env` is git-ignored, so your password stays on your computer.
+3. Install dependencies:
 
 ```bash
 npm install
@@ -31,7 +35,7 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000. On the first start the app creates its tables in Neon and loads the demo data.
 
 ### Demo logins (development only)
 
@@ -46,17 +50,22 @@ The database is seeded on first run. These buttons also appear on the sign-in pa
 
 To try the whole flow on one computer, sign in to each role on a **different address** so the logins don't overwrite each other: `http://localhost:3000`, `http://127.0.0.1:3000` and `http://[::1]:3000`. Use **Simulate ride** in the rider app to drive along the real road route without moving.
 
-Reset all data with `npm run reset-db`.
+To wipe the database and start fresh (this deletes all orders, users and medicines):
+
+```bash
+npm run reset-db -- --yes
+```
 
 ## Configuration
 
-Set these as environment variables:
+Put these in `.env` (or set them as environment variables on your host):
 
 | Variable | Purpose |
 |---|---|
+| `DATABASE_URL` | **Required.** Neon Postgres connection string |
 | `PORT` | Default `3000` |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Admin login created on the **first** run. Set these before going live. |
-| `JWT_SECRET` | Session signing key. A random key is generated in `data/` if not set. |
+| `JWT_SECRET` | Session signing key. A random key is generated in `data/` if not set. **Set it when hosting**, so logins survive redeploys. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Turns on real UPI and card payments through Razorpay Checkout, with server-side signature checks. Without them, a clearly labelled **demo gateway** is used and nothing is charged. |
 | `NODE_ENV=production` | Hides the demo-login panel |
 
@@ -73,8 +82,9 @@ Set these as environment variables:
 ```
 server/
   index.js   REST API, auth (JWT + bcrypt), order state machine, notifications, Socket.IO, Razorpay
-  db.js      SQLite schema (node:sqlite)
+  db.js      Neon Postgres connection pool, schema, query + transaction helpers
   seed.js    Demo clinics, Ayurvedic medicine catalogue, demo accounts
+  reset.js   Drops all tables (npm run reset-db -- --yes)
 public/
   index.html             Sign in / register
   shop.html, js/shop.js  Customer app
