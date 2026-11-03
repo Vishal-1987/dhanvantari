@@ -235,6 +235,8 @@ const findUsername = (username) => one('SELECT * FROM users WHERE lower(username
 
 app.get('/api/config', (req, res) => res.json({
   demo: DEMO,
+  // The demo admin button only makes sense while the default admin123 login is in use.
+  demoAdmin: DEMO && !process.env.ADMIN_PASSWORD,
   payments: { razorpay: RAZORPAY, keyId: RAZORPAY ? RZP_KEY : null },
   freeDeliveryAbove: FREE_DELIVERY_ABOVE,
 }));

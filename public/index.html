@@ -196,7 +196,8 @@
     // Demo accounts (development only).
     api('/config').then((c) => {
       if (!c.demo) return;
-      const rows = [['Admin', 'admin', 'admin123', 'admin'], ['Customer', 'demo', 'demo123', 'member'], ['Clinic desk', 'clinic1', 'clinic123', 'member'], ['Delivery rider', 'rider1', 'rider123', 'member']];
+      const rows = [['Customer', 'demo', 'demo123', 'member'], ['Clinic desk', 'clinic1', 'clinic123', 'member'], ['Delivery rider', 'rider1', 'rider123', 'member']];
+      if (c.demoAdmin) rows.unshift(['Admin', 'admin', 'admin123', 'admin']);
       const el = document.getElementById('demo');
       el.innerHTML = `<b>Demo accounts</b> · development mode only<table>${rows.map(([r, u, p, pt]) =>
         `<tr><td>${r}</td><td><code>${u}</code></td><td><button data-u="${u}" data-p="${p}" data-pt="${pt}">Use</button></td></tr>`).join('')}</table>`;
