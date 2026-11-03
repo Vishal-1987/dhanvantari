@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ROOT, DATA_DIR, TZ, init, one, all, run, tx } from './db.js';
-import { seed, enrich } from './seed.js';
+import { seed, enrich, syncAdmin } from './seed.js';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -25,6 +25,7 @@ const JWT_SECRET = process.env.JWT_SECRET || (fs.existsSync(secretFile)
 
 await init();
 if (await seed()) console.log('Seeded demo data (see README for demo logins).');
+if (await syncAdmin()) console.log(`Admin password updated from .env for "${process.env.ADMIN_USERNAME || 'admin'}".`);
 const enriched = await enrich();
 if (enriched) console.log(`Added catalogue details to ${enriched} rows.`);
 

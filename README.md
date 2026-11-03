@@ -64,14 +64,14 @@ Put these in `.env` (or set them as environment variables on your host):
 |---|---|
 | `DATABASE_URL` | **Required.** Neon Postgres connection string |
 | `PORT` | Default `3000` |
-| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Admin login created on the **first** run. Set these before going live. |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Your admin login. Applied **every time the server starts**, so you can change the admin password by editing `.env` and restarting. If unset, the demo password `admin123` stays in use. |
 | `JWT_SECRET` | Session signing key. A random key is generated in `data/` if not set. **Set it when hosting**, so logins survive redeploys. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Turns on real UPI and card payments through Razorpay Checkout, with server-side signature checks. Without them, a clearly labelled **demo gateway** is used and nothing is charged. |
 | `NODE_ENV=production` | Hides the demo-login panel |
 
 ## Before going live
 
-- **Change the seeded accounts.** Set `ADMIN_PASSWORD` before the first run, then disable or reset the demo clinic, rider and customer accounts in the admin console.
+- **Change the seeded accounts.** Set your own `ADMIN_PASSWORD` in `.env` and restart, then disable or reset the demo clinic, rider and customer accounts in the admin console.
 - **Replace the demo clinics.** The four Bengaluru clinics are sample data. Add your real hubs and clinics under *Clinics & hubs* (pick each location on the map), then create a clinic login for each one.
 - **Use HTTPS.** Browsers only allow GPS and notifications on HTTPS (or localhost), so riders' phones need the site served over HTTPS.
 - **Maps.** Map tiles come from OpenStreetMap, routes from the public OSRM demo server, and address lookup from Nominatim. These free services have fair-use limits. For production traffic, use a paid provider (e.g. Mapbox, Google Maps, or your own OSRM). Only `public/js/common.js` needs to change (`makeMap`, `route`, `reverseGeocode`).

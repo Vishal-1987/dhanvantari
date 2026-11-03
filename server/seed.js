@@ -82,6 +82,32 @@ export async function seed() {
   return true;
 }
 
+/**
+ * Keeps the admin login in step with ADMIN_USERNAME / ADMIN_PASSWORD from .env, so the password can be
+ * changed after the first run. Does nothing when ADMIN_PASSWORD is not set. Returns true if it changed anything.
+ */
+export async function syncAdmin() {
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) return false;
+  if (password.length < 6) {
+    console.warn('ADMIN_PASSWORD must be at least 6 characters — ignoring it.');
+    return false;
+  }
+  const username = process.env.ADMIN_USERNAME || 'admin';
+  const u = await one('SELECT * FROM users WHERE lower(username) = lower(?)', username);
+  if (!u) {
+    await run('INSERT INTO users (username, password_hash, role, name) VALUES (?,?,?,?)', username, hash(password), 'admin', 'Platform Administrator');
+    return true;
+  }
+  if (u.role !== 'admin') {
+    console.warn(`ADMIN_USERNAME "${username}" belongs to a ${u.role} account — not changing it.`);
+    return false;
+  }
+  if (bcrypt.compareSync(password, u.password_hash) && u.active) return false;
+  await run('UPDATE users SET password_hash = ?, active = 1 WHERE id = ?', hash(password), u.id);
+  return true;
+}
+
 // Catalogue details added in v2. Filled in only where still empty, so admin edits are never overwritten.
 // name: [botanical source, benefits ('|'-separated), doshas balanced, Vaidya's pick]
 const DETAILS = {
