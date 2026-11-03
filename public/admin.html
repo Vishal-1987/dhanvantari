@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dhanvantari · Admin</title>
+  <link rel="icon" href="/img/icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/css/app.css" />
+  <style>
+    .shell { display: grid; grid-template-columns: 236px 1fr; min-height: calc(100vh - 64px); }
+    .nav { border-right: 1px solid var(--line); padding: 18px 12px; display: flex; flex-direction: column; gap: 2px; position: sticky; top: 64px; height: calc(100vh - 64px); }
+    .nav button { display: flex; gap: 12px; align-items: center; height: 42px; padding: 0 12px; border: 0; background: none; border-radius: 10px; font: 500 14px var(--font); color: var(--ink-2); cursor: pointer; text-align: left; }
+    .nav button:hover { background: #efebdf; }
+    .nav button.active { background: var(--forest); color: #fff; }
+    .nav .cnt { margin-left: auto; background: var(--saffron); color: #fff; border-radius: 99px; font-size: 11px; padding: 1px 8px; }
+    .nav .grp { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); padding: 14px 12px 6px; font-weight: 700; }
+    .main { padding: 26px 28px 60px; min-width: 0; }
+    .two { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+    .bars { display: flex; gap: 10px; align-items: flex-end; height: 160px; padding: 10px 4px 0; }
+    .bars .b { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .bars .b i { width: 100%; max-width: 38px; background: var(--leaf); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+    .bars .b small { font-size: 11px; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .inline-input { width: 90px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; font: 14px var(--font); }
+    @media (max-width: 1000px) {
+      .shell { grid-template-columns: 1fr; }
+      .nav { position: static; height: auto; flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px; }
+      .nav .grp { display: none; }
+      .nav button { flex: none; }
+      .main { padding: 20px 16px 48px; }
+      .two { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav class="nav" id="nav"></nav>
+    <main class="main" id="main"><div class="empty"><div class="spin dark" style="margin:auto"></div></div></main>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/orderview.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

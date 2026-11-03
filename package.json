@@ -1,0 +1,23 @@
+{
+  "name": "dhanvantari",
+  "version": "1.0.0",
+  "description": "Ayurvedic medicine ordering & delivery platform — customers, Ayurvedic clinics/hubs, delivery riders and admin, with live map tracking and payments.",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "reset-db": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\""
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "socket.io": "^4.8.4"
+  }
+}
