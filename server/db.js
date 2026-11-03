@@ -120,6 +120,13 @@ const SCHEMA = `
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
   );
 
+  -- v2: richer catalogue & clinic details
+  ALTER TABLE medicines ADD COLUMN IF NOT EXISTS botanical TEXT;           -- Latin / botanical source
+  ALTER TABLE medicines ADD COLUMN IF NOT EXISTS benefits  TEXT;           -- '|'-separated short benefit lines
+  ALTER TABLE medicines ADD COLUMN IF NOT EXISTS dosha     TEXT;           -- e.g. 'Vata,Pitta'
+  ALTER TABLE medicines ADD COLUMN IF NOT EXISTS featured  INTEGER NOT NULL DEFAULT 0;  -- "Vaidya's pick"
+  ALTER TABLE clinics   ADD COLUMN IF NOT EXISTS services  TEXT;           -- '|'-separated
+
   CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
   CREATE INDEX IF NOT EXISTS idx_orders_clinic   ON orders(clinic_id);
   CREATE INDEX IF NOT EXISTS idx_orders_rider    ON orders(rider_id);

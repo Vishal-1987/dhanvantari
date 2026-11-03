@@ -39,6 +39,21 @@
     stop: ico('<rect x="5" y="5" width="14" height="14" rx="2"/>'),
     refresh: ico('<path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>'),
     edit: ico('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'),
+    heart: ico('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.2 12H8l1.5-3 3 6 1.5-3h6.8"/>'),
+    moon: ico('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'),
+    wind: ico('<path d="M12.8 19.6A2 2 0 1 0 14 16H2M17.5 8a2.5 2.5 0 1 1 2 4H2M9.8 4.4A2 2 0 1 1 11 8H2"/>'),
+    activity: ico('<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>'),
+    droplet: ico('<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>'),
+    sparkles: ico('<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/>'),
+    flower: ico('<circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/>'),
+    sun: ico('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'),
+    flame: ico('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+    star: ico('<path d="M11.5 2.3a.5.5 0 0 1 .9 0l2.3 4.8a2 2 0 0 0 1.6 1.1l5.2.8a.5.5 0 0 1 .3.9l-3.8 3.7a2 2 0 0 0-.6 1.9l.9 5.2a.5.5 0 0 1-.8.6l-4.7-2.5a2 2 0 0 0-1.9 0l-4.7 2.5a.5.5 0 0 1-.8-.6l.9-5.2a2 2 0 0 0-.6-1.9L1.9 9.9a.5.5 0 0 1 .3-.9l5.2-.8a2 2 0 0 0 1.6-1.1z"/>'),
+    truck: ico('<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>'),
+    award: ico('<circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/>'),
+    arrow: ico('<path d="M5 12h14M12 5l7 7-7 7"/>'),
+    sliders: ico('<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>'),
+    trend: ico('<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'),
   };
 
   const LOGO = `<svg viewBox="0 0 32 32" fill="none"><path d="M16 4c5 4 7 8.5 7 12.5S20 25 16 28c-4-3-7-7.5-7-11.5S11 8 16 4Z" fill="#8fb59a"/><path d="M16 9v19" stroke="#17402f" stroke-width="1.6"/><path d="M16 15l3.5-3M16 20l-3.5-3M16 24l4-3" stroke="#17402f" stroke-width="1.4" stroke-linecap="round"/><circle cx="24" cy="8" r="2.4" fill="#d48a26"/></svg>`;
@@ -177,13 +192,13 @@
   }
 
   // ----------------------------------------------------------------- topbar
-  function topbar(user, { roleLabel, extra = '' } = {}) {
+  function topbar(user, { roleLabel, extra = '', nav = '' } = {}) {
     const el = document.createElement('header');
     el.className = 'topbar';
     el.innerHTML = `
       <a class="brand" href="${HOME[user.role]}"><div class="brand-mark">${LOGO}</div>
         <div><div class="brand-name">Dhanvantari</div><div class="brand-sub">Pure Ayurveda, delivered</div></div></a>
-      <span class="role-chip">${esc(roleLabel)}</span>
+      ${nav || `<span class="role-chip">${esc(roleLabel)}</span>`}
       <div class="spacer"></div>
       ${extra}
       <div class="bell user-menu"><button class="btn icon" id="bellBtn" aria-label="Notifications">${icons.bell}</button><span class="pip hidden" id="bellPip"></span>

@@ -7,7 +7,7 @@ import { Server } from 'socket.io';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { ROOT, DATA_DIR, TZ, init, one, all, run, tx } from './db.js';
-import { seed } from './seed.js';
+import { seed, enrich } from './seed.js';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -25,6 +25,8 @@ const JWT_SECRET = process.env.JWT_SECRET || (fs.existsSync(secretFile)
 
 await init();
 if (await seed()) console.log('Seeded demo data (see README for demo logins).');
+const enriched = await enrich();
+if (enriched) console.log(`Added catalogue details to ${enriched} rows.`);
 
 const FREE_DELIVERY_ABOVE = 999;
 const ACTIVE = ['placed', 'accepted', 'ready', 'picked_up'];
@@ -61,6 +63,11 @@ const publicUser = (u) => u && ({
 });
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+/** Accepts an array or a comma/newline list from a form and stores it with the given separator. */
+const joinList = (v, sep) => {
+  const list = (Array.isArray(v) ? v : String(v || '').split(/[\n,|]/)).map((x) => String(x).trim()).filter(Boolean);
+  return list.length ? list.join(sep) : null;
+};
 const userById = (id) => one('SELECT * FROM users WHERE id = ?', id);
 
 class HttpError extends Error {
@@ -266,14 +273,26 @@ app.patch('/api/me', auth(), wrap(async (req, res) => {
 // ---------------------------------------------------------------------------
 // Catalogue & clinics
 // ---------------------------------------------------------------------------
+const split = (s, sep) => (s ? s.split(sep).map((x) => x.trim()).filter(Boolean) : []);
 const medicineOut = (m) => ({
   id: m.id, name: m.name, category: m.category, form: m.form, pack: m.pack, price: m.price, mrp: m.mrp,
   description: m.description, ingredients: m.ingredients, dosage: m.dosage, rx: !!m.rx, stock: m.stock, active: !!m.active,
+  botanical: m.botanical, benefits: split(m.benefits, '|'), dosha: split(m.dosha, ','), featured: !!m.featured, sold: m.sold ?? 0,
 });
+
+// Units actually sold, from real orders — drives "Bestseller" badges and popularity sorting.
+const MEDICINE_SELECT = `
+  SELECT m.*, COALESCE(s.sold, 0) AS sold
+    FROM medicines m
+    LEFT JOIN (SELECT (e->>'id')::int AS id, SUM((e->>'qty')::int) AS sold
+                 FROM orders o, jsonb_array_elements(o.items::jsonb) e
+                WHERE o.status NOT IN ('cancelled','awaiting_payment')
+                GROUP BY 1) s ON s.id = m.id`;
+const medicineById = async (id) => medicineOut(await one(`${MEDICINE_SELECT} WHERE m.id = ?`, id));
 
 app.get('/api/medicines', auth(), wrap(async (req, res) => {
   const showAll = req.user.role === 'admin' && req.query.all;
-  res.json((await all(`SELECT * FROM medicines ${showAll ? '' : 'WHERE active = 1'} ORDER BY category, name`)).map(medicineOut));
+  res.json((await all(`${MEDICINE_SELECT} ${showAll ? '' : 'WHERE m.active = 1'} ORDER BY m.category, m.name`)).map(medicineOut));
 }));
 
 app.get('/api/clinics', auth(), wrap(async (req, res) => {
@@ -564,11 +583,11 @@ app.patch('/api/admin/users/:id', admin, wrap(async (req, res) => {
 }));
 
 app.post('/api/admin/clinics', admin, wrap(async (req, res) => {
-  const { name, kind, address, phone, lat, lng, hours, vaidya } = req.body || {};
+  const { name, kind, address, phone, lat, lng, hours, vaidya, services } = req.body || {};
   if (!name?.trim() || !address?.trim()) throw new HttpError(400, 'Name and address are required.');
   if (!isNum(lat) || !isNum(lng)) throw new HttpError(400, 'Pick the clinic location on the map.');
-  const { lastInsertRowid: id } = await run('INSERT INTO clinics (name, kind, address, phone, lat, lng, hours, vaidya) VALUES (?,?,?,?,?,?,?,?)',
-    name.trim(), kind === 'clinic' ? 'clinic' : 'hub', address.trim(), phone || null, lat, lng, hours || '9:00 AM – 9:00 PM', vaidya || null);
+  const { lastInsertRowid: id } = await run('INSERT INTO clinics (name, kind, address, phone, lat, lng, hours, vaidya, services) VALUES (?,?,?,?,?,?,?,?,?)',
+    name.trim(), kind === 'clinic' ? 'clinic' : 'hub', address.trim(), phone || null, lat, lng, hours || '9:00 AM – 9:00 PM', vaidya || null, joinList(services, '|'));
   res.status(201).json(await one('SELECT * FROM clinics WHERE id = ?', id));
 }));
 
@@ -586,22 +605,24 @@ app.post('/api/admin/medicines', admin, wrap(async (req, res) => {
   const b = req.body || {};
   if (!b.name?.trim() || !b.category?.trim() || !b.form?.trim() || !b.pack?.trim()) throw new HttpError(400, 'Name, category, form and pack size are required.');
   if (!(Number(b.price) > 0)) throw new HttpError(400, 'Enter a valid price.');
-  const { lastInsertRowid: id } = await run(`INSERT INTO medicines (name, category, form, pack, price, mrp, description, ingredients, dosage, rx, stock)
-                  VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+  const { lastInsertRowid: id } = await run(`INSERT INTO medicines (name, category, form, pack, price, mrp, description, ingredients, dosage, rx, stock,
+                    botanical, benefits, dosha, featured) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     b.name.trim(), b.category.trim(), b.form.trim(), b.pack.trim(), Number(b.price), Number(b.mrp) || null,
-    b.description || null, b.ingredients || null, b.dosage || null, b.rx ? 1 : 0, Math.max(0, Math.floor(Number(b.stock)) || 0));
-  res.status(201).json(medicineOut(await one('SELECT * FROM medicines WHERE id = ?', id)));
+    b.description || null, b.ingredients || null, b.dosage || null, b.rx ? 1 : 0, Math.max(0, Math.floor(Number(b.stock)) || 0),
+    b.botanical?.trim() || null, joinList(b.benefits, '|'), joinList(b.dosha, ','), b.featured ? 1 : 0);
+  res.status(201).json(await medicineById(id));
 }));
 
 app.patch('/api/admin/medicines/:id', admin, wrap(async (req, res) => {
   const m = await one('SELECT * FROM medicines WHERE id = ?', Number(req.params.id));
   if (!m) throw new HttpError(404, 'Medicine not found.');
   const b = req.body || {};
-  await run('UPDATE medicines SET price = ?, mrp = ?, stock = ?, active = ? WHERE id = ?',
+  await run('UPDATE medicines SET price = ?, mrp = ?, stock = ?, active = ?, featured = ? WHERE id = ?',
     Number(b.price) > 0 ? Number(b.price) : m.price, b.mrp != null ? Number(b.mrp) || null : m.mrp,
     b.stock != null ? Math.max(0, Math.floor(Number(b.stock)) || 0) : m.stock,
-    typeof b.active === 'boolean' ? (b.active ? 1 : 0) : m.active, m.id);
-  res.json(medicineOut(await one('SELECT * FROM medicines WHERE id = ?', m.id)));
+    typeof b.active === 'boolean' ? (b.active ? 1 : 0) : m.active,
+    typeof b.featured === 'boolean' ? (b.featured ? 1 : 0) : m.featured, m.id);
+  res.json(await medicineById(m.id));
 }));
 
 app.get('/api/admin/riders/live', admin, wrap(async (req, res) => {

@@ -24,7 +24,17 @@
     .bars .b i { width: 100%; max-width: 38px; background: var(--leaf); border-radius: 6px 6px 2px 2px; min-height: 3px; }
     .bars .b small { font-size: 11px; }
     .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-    .inline-input { width: 90px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; font: 14px var(--font); }
+    .inline-input { width: 90px; height: 34px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: 9px; font: 14px var(--font); }
+    .inline-input:focus { outline: 0; border-color: var(--leaf); box-shadow: var(--ring); }
+    .thumb { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; overflow: hidden; flex: none; }
+    .thumb svg { width: 44px; height: 44px; }
+    .thumb.lg { width: 110px; height: 110px; border-radius: 18px; }
+    .thumb.lg svg { width: 104px; height: 104px; }
+    .btn.star { width: 32px; }
+    .btn.star.on { color: var(--saffron); background: var(--saffron-soft); border-color: transparent; }
+    .btn.star.on svg { fill: currentColor; }
+    .bars .b i { background: linear-gradient(180deg, var(--leaf-2), var(--forest)); }
+    .nav { background: var(--surface); }
     @media (max-width: 1000px) {
       .shell { grid-template-columns: 1fr; }
       .nav { position: static; height: auto; flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 16px; }
@@ -44,6 +54,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/orderview.js"></script>
+  <script src="/js/art.js"></script>
   <script src="/js/admin.js"></script>
 </body>
 </html>

@@ -81,3 +81,55 @@ export async function seed() {
   });
   return true;
 }
+
+// Catalogue details added in v2. Filled in only where still empty, so admin edits are never overwritten.
+// name: [botanical source, benefits ('|'-separated), doshas balanced, Vaidya's pick]
+const DETAILS = {
+  'Ashwagandha Churna': ['Withania somnifera', 'Supports strength and stamina|Helps the body adapt to stress|Promotes restful sleep', 'Vata,Kapha', 1],
+  'Brahmi Vati': ['Bacopa monnieri', 'Supports memory and focus|Calms an overactive mind|Traditional medhya rasayana', 'Vata,Pitta', 1],
+  'Saraswatarishta': ['Bacopa monnieri & Asparagus racemosus', 'Supports mental clarity|Traditional nervine tonic|Gentle on digestion', 'Vata,Pitta', 0],
+  'Triphala Churna': ['Emblica, Terminalia bellirica & T. chebula', 'Gentle daily cleanse|Supports regular digestion|Rich natural antioxidant', 'Vata,Pitta,Kapha', 1],
+  'Hingvastak Churna': ['Ferula asafoetida blend', 'Eases bloating and gas|Kindles digestive fire (agni)|Taken with the first morsel', 'Vata,Kapha', 0],
+  'Avipattikar Churna': ['Operculina turpethum blend', 'Soothes acidity|Cools excess Pitta|Supports smooth elimination', 'Pitta', 0],
+  'Chyawanprash': ['Emblica officinalis (Amla)', 'Year-round immunity support|Rich in natural vitamin C|For all ages', 'Vata,Pitta,Kapha', 1],
+  'Giloy Ghan Vati': ['Tinospora cordifolia', 'Supports natural defences|Traditional fever-season herb|Concentrated extract', 'Vata,Pitta,Kapha', 0],
+  'Tulsi Drops': ['Ocimum sanctum (5 varieties)', 'Seasonal wellness support|Soothes throat|Easy to take in warm water', 'Vata,Kapha', 0],
+  'Sitopaladi Churna': ['Rock candy & Piper longum blend', 'Soothes cough and throat|Supports respiratory comfort|Pleasant taste with honey', 'Kapha,Pitta', 1],
+  'Vasarishta': ['Adhatoda vasica', 'Supports clear breathing|Traditional chest tonic|Fermented for absorption', 'Kapha', 0],
+  'Mahanarayan Taila': ['Sida cordifolia & Withania in sesame oil', 'Relieves joint and muscle stiffness|Warming massage oil|Nourishes tissues', 'Vata', 1],
+  'Yograj Guggulu': ['Commiphora mukul', 'Supports joint mobility|Classical Vata-balancing formula|Aids healthy metabolism', 'Vata,Kapha', 0],
+  'Maharasnadi Kashayam': ['Pluchea lanceolata blend', 'Eases Vata-type stiffness|Classical decoction|Supports flexibility', 'Vata', 0],
+  'Arjunarishta': ['Terminalia arjuna', 'Supports heart health|Traditional cardiac tonic|Gentle daily use', 'Pitta,Kapha', 1],
+  'Sarpagandha Ghan Vati': ['Rauvolfia serpentina', 'Used for blood-pressure care|Physician-supervised only|Calming herb', 'Vata,Pitta', 0],
+  'Nishamalaki Churna': ['Curcuma longa & Emblica officinalis', 'Supports healthy sugar metabolism|Turmeric and amla synergy|Antioxidant rich', 'Kapha,Pitta', 0],
+  'Chandraprabha Vati': ['Shilajit & Commiphora mukul blend', 'Urinary and metabolic support|Physician-supervised only|Classical multi-herb formula', 'Vata,Pitta,Kapha', 0],
+  'Kumkumadi Tailam': ['Crocus sativus (Saffron)', 'For radiant, even-toned skin|Night-time facial oil|Traditional beauty elixir', 'Vata,Pitta', 1],
+  'Neelibhringadi Taila': ['Indigofera tinctoria & Eclipta alba', 'Nourishes scalp and hair|Supports thicker-looking hair|Cooling head massage', 'Pitta', 0],
+  'Manjishtadi Kashayam': ['Rubia cordifolia', 'Supports clear skin|Traditional blood purifier|Cools excess Pitta', 'Pitta,Kapha', 0],
+  'Shatavari Churna': ['Asparagus racemosus', 'Women’s vitality at every age|Nourishing rasayana|Supports hormonal balance', 'Vata,Pitta', 1],
+  'Ashokarishta': ['Saraca asoca', 'Supports menstrual comfort|Classical women’s tonic|Fermented for absorption', 'Pitta', 0],
+  'Dhanwantharam Thailam': ['Sida cordifolia & Dashamoola in sesame oil', 'Post-natal massage care|Strengthens and nourishes|Kerala tradition', 'Vata', 0],
+  'Amla Rasayana': ['Emblica officinalis', 'Daily rejuvenation|Natural vitamin C|Supports skin, hair and eyes', 'Vata,Pitta,Kapha', 0],
+  'Dashamoola Kashayam': ['Ten-root blend (Dashamoola)', 'Balances Vata|Supports comfort and recovery|Classical decoction', 'Vata', 0],
+  'Shilajit Rasayana': ['Asphaltum punjabianum (purified)', 'Strength and stamina rasayana|Rich in fulvic minerals|Take under guidance', 'Vata,Kapha', 0],
+};
+
+const CLINIC_SERVICES = {
+  'Dhanvantari Ayurveda Hub — Jayanagar': 'Full classical pharmacy|Vaidya on call|Same-day delivery',
+  'Sushruta Ayurvedic Clinic — Indiranagar': 'Nadi pariksha consultation|Panchakarma|Prescription dispensing',
+  'Charaka Ayurveda Hub — Malleshwaram': 'Full classical pharmacy|Herbal oils & decoctions|Same-day delivery',
+  'Vagbhata Wellness Clinic — Whitefield': 'Consultation|Abhyanga & Shirodhara|Prescription dispensing',
+};
+
+/** Adds v2 details to existing rows (safe to run on every start). Returns how many rows changed. */
+export async function enrich() {
+  let changed = 0;
+  for (const [name, [botanical, benefits, dosha, featured]] of Object.entries(DETAILS)) {
+    changed += (await run('UPDATE medicines SET botanical = ?, benefits = ?, dosha = ?, featured = ? WHERE name = ? AND botanical IS NULL',
+      botanical, benefits, dosha, featured, name)).changes;
+  }
+  for (const [name, services] of Object.entries(CLINIC_SERVICES)) {
+    changed += (await run('UPDATE clinics SET services = ? WHERE name = ? AND services IS NULL', services, name)).changes;
+  }
+  return changed;
+}

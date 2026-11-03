@@ -157,7 +157,8 @@
         <label class="field"><span>Address</span><input class="input" name="address" required /></label>
         <div class="grid2"><label class="field"><span>Phone</span><input class="input" name="phone" /></label>
           <label class="field"><span>Vaidya / physician</span><input class="input" name="vaidya" placeholder="Dr. …, BAMS" /></label></div>
-        <label class="field"><span>Opening hours</span><input class="input" name="hours" value="9:00 AM – 9:00 PM" /></label>
+        <div class="grid2"><label class="field"><span>Opening hours</span><input class="input" name="hours" value="9:00 AM – 9:00 PM" /></label>
+          <label class="field"><span>Services (comma separated)</span><input class="input" name="services" placeholder="Consultation, Panchakarma" /></label></div>
         <label class="field"><span>Location — click the map to place the pin</span></label>
         <div class="map" id="amap" style="height:260px;border-radius:12px"></div>
       </form>`, { wide: true, foot: `<button class="btn ghost" data-close>Cancel</button><button class="btn" id="cSave">Save clinic</button>` });
@@ -240,13 +241,16 @@
 
   // ---- medicines -----------------------------------------------------------------
   function medsView() {
-    main.innerHTML = head('Medicines', `${state.meds.length} Ayurvedic products. Edit price and stock inline.`, `<button class="btn" id="addMed">${icons.plus} Add medicine</button>`) + `
-      <div class="card"><div class="table-wrap"><table class="t"><thead><tr><th>Medicine</th><th>Category</th><th>Form · pack</th><th>Price (₹)</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>
-      ${state.meds.map((m) => `<tr data-id="${m.id}"><td><b>${esc(m.name)}</b> ${m.rx ? '<span class="badge rx">Rx</span>' : ''}</td><td>${esc(m.category)}</td><td>${esc(m.form)} · ${esc(m.pack)}</td>
+    main.innerHTML = head('Medicines', `${state.meds.length} Ayurvedic products. Edit price and stock inline; star a product to feature it as a Vaidya's pick.`, `<button class="btn" id="addMed">${icons.plus} Add medicine</button>`) + `
+      <div class="card"><div class="table-wrap"><table class="t"><thead><tr><th>Medicine</th><th>Category</th><th>Form · pack</th><th>Sold</th><th>Price (₹)</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody>
+      ${state.meds.map((m) => `<tr data-id="${m.id}"><td><div class="row" style="gap:12px"><div class="thumb" style="background:${ART.bg(m)}">${ART.svg(m)}</div>
+          <div><b>${esc(m.name)}</b> ${m.rx ? '<span class="badge rx">Rx</span>' : ''}<br><small style="font-family:var(--serif);font-style:italic">${esc(m.botanical || '')}</small></div></div></td>
+        <td>${esc(m.category)}</td><td>${esc(m.form)} · ${esc(m.pack)}</td><td>${m.sold}</td>
         <td><input class="inline-input" data-f="price" type="number" min="1" value="${m.price}" /></td>
         <td><input class="inline-input" data-f="stock" type="number" min="0" value="${m.stock}" style="${m.stock < 20 ? 'border-color:var(--clay);color:var(--clay)' : ''}" /></td>
         <td>${m.active ? '<span class="badge dot">Listed</span>' : '<span class="badge dot grey">Hidden</span>'}</td>
-        <td><div class="row" style="gap:6px"><button class="btn sm soft" data-save>Save</button><button class="btn sm ghost" data-vis="${m.active ? 0 : 1}">${m.active ? 'Hide' : 'List'}</button></div></td></tr>`).join('')}
+        <td><div class="row" style="gap:6px"><button class="btn sm icon star ${m.featured ? 'on' : ''}" data-feat="${m.featured ? 0 : 1}" title="${m.featured ? 'Remove from' : 'Add to'} Vaidya's picks" aria-label="Toggle Vaidya's pick">${icons.star}</button>
+          <button class="btn sm soft" data-save>Save</button><button class="btn sm ghost" data-vis="${m.active ? 0 : 1}">${m.active ? 'Hide' : 'List'}</button></div></td></tr>`).join('')}
       </tbody></table></div></div>`;
     main.querySelectorAll('tr[data-id]').forEach((tr) => {
       const id = Number(tr.dataset.id);
@@ -256,6 +260,7 @@
       });
       tr.querySelector('[data-save]').onclick = (e) => save({ price: Number(tr.querySelector('[data-f=price]').value), stock: Number(tr.querySelector('[data-f=stock]').value) }, e.currentTarget);
       tr.querySelector('[data-vis]').onclick = (e) => save({ active: e.currentTarget.dataset.vis === '1' }, e.currentTarget);
+      tr.querySelector('[data-feat]').onclick = (e) => save({ featured: e.currentTarget.dataset.feat === '1' }, e.currentTarget);
     });
     main.querySelector('#addMed').onclick = addMed;
   }
@@ -272,15 +277,30 @@
           <label class="field"><span>Opening stock</span><input class="input" name="stock" type="number" min="0" value="50" /></label></div>
         <div class="grid2"><label class="field"><span>Price (₹)</span><input class="input" name="price" type="number" min="1" required /></label>
           <label class="field"><span>MRP (₹)</span><input class="input" name="mrp" type="number" min="1" /></label></div>
+        <label class="field"><span>Botanical source</span><input class="input" name="botanical" placeholder="Boerhavia diffusa" /></label>
         <label class="field"><span>Description (traditional use)</span><textarea class="input" name="description" rows="2"></textarea></label>
-        <label class="field"><span>Key ingredients</span><input class="input" name="ingredients" /></label>
-        <label class="field"><span>Suggested use</span><input class="input" name="dosage" /></label>
-        <label class="row" style="gap:8px;font-size:14px"><input type="checkbox" name="rx" /> Requires vaidya verification (Rx)</label>
+        <label class="field"><span>Key benefits — one per line</span><textarea class="input" name="benefits" rows="3" placeholder="Supports healthy fluid balance&#10;Traditional liver tonic"></textarea></label>
+        <div class="grid2"><label class="field"><span>Key ingredients</span><input class="input" name="ingredients" /></label>
+          <label class="field"><span>Suggested use</span><input class="input" name="dosage" /></label></div>
+        <label class="field"><span>Balances dosha</span></label>
+        <div class="row" style="gap:16px;margin:-6px 0 14px;font-size:14px">${['Vata', 'Pitta', 'Kapha'].map((d) => `<label class="row" style="gap:6px"><input type="checkbox" name="dosha" value="${d}" /> ${d}</label>`).join('')}</div>
+        <div class="row wrap" style="gap:20px;font-size:14px">
+          <label class="row" style="gap:8px"><input type="checkbox" name="rx" /> Requires vaidya verification (Rx)</label>
+          <label class="row" style="gap:8px"><input type="checkbox" name="featured" /> Feature as Vaidya's pick</label></div>
+        <div style="margin-top:18px;display:flex;gap:16px;align-items:center"><div class="thumb lg" id="mPreview"></div><small>Live packshot preview — updates as you type the name, category and form.</small></div>
       </form>`, { wide: true, foot: `<button class="btn ghost" data-close>Cancel</button><button class="btn" id="mSave">Add medicine</button>` });
+    const form = md.querySelector('#mf'), preview = md.querySelector('#mPreview');
+    const drawPreview = () => {
+      const f = Object.fromEntries(new FormData(form));
+      const m = { name: f.name || 'New medicine', category: f.category, form: f.form, pack: f.pack || 'Pack' };
+      preview.style.background = ART.bg(m); preview.innerHTML = ART.svg(m);
+    };
+    form.addEventListener('input', drawPreview); drawPreview();
     md.querySelector('#mSave').onclick = (e) => busy(e.currentTarget, async () => {
-      const f = Object.fromEntries(new FormData(md.querySelector('#mf')));
+      const fd = new FormData(form);
+      const f = Object.fromEntries(fd);
       try {
-        await api('/admin/medicines', { method: 'POST', body: { ...f, rx: !!f.rx } });
+        await api('/admin/medicines', { method: 'POST', body: { ...f, dosha: fd.getAll('dosha'), rx: !!f.rx, featured: !!f.featured } });
         state.meds = await api('/medicines?all=1'); md.close(); toast('Medicine added', f.name); render();
       } catch (ex) { fail(ex); }
     });
